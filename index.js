@@ -76,18 +76,18 @@ class DocumentEditor {
     }
 
     /**
-     * @param {(parsedDocument) => void} onParsed
+     * @param {{ target: string, onParsed: (parsedDocument) => void }} onParsed
      * @returns {DocumentEditor | null}
      */
-    parse(onParsed = () => {}) {
+    parse(options = { target: "word/document.xml", onParsed: () => {} }) {
         try {
-            const docFile = fs.readFileSync(normalizePath(this._options.workDirectory, this._options.documentName, "word", "document.xml"), "utf-8");
+            const docFile = fs.readFileSync(normalizePath(this._options.workDirectory, this._options.documentName, options.target), "utf-8");
             const docContent = xmlParser.parse(docFile, parserConfig.read);
 
-            onParsed(docContent);
+            options.onParsed(docContent);
 
             const updatedFile = new Parser(parserConfig.write).parse(docContent);
-            fs.writeFileSync(normalizePath(this._options.workDirectory, this._options.documentName, "word", "document.xml"), updatedFile);
+            fs.writeFileSync(normalizePath(this._options.workDirectory, this._options.documentName, options.target), updatedFile);
             return this;
         } catch (exception) {
             console.log(exception);
