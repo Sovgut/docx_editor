@@ -12,10 +12,10 @@ class DocumentEditor {
      */
     constructor(options) {
         /**
-         * @type {{ debug: boolean, workDirectory: string, documentName: string }}
+         * @type {{ showLogs: boolean, workDirectory: string, documentName: string }}
          */
         this._options = {
-            debug: false,
+            showLogs: false,
             workDirectory: os.tmpdir(),
             documentName: `document_${Date.now()}`,
             ...options,
@@ -27,26 +27,28 @@ class DocumentEditor {
      * @returns {Promise<DocumentEditor | null>}
      */
     async extract(data) {
-        const zipContent = await JSZip.loadAsync(data, { createFolders: true });
+        const filesTimeLogs = [];
+        const functionTime = Date.now();
 
+        const zipContent = await JSZip.loadAsync(data, { createFolders: true });
         try {
             if (!fs.existsSync(normalizePath(this._options.workDirectory, this._options.documentName))) {
                 fs.mkdirSync(normalizePath(this._options.workDirectory, this._options.documentName));
+
+                if (this._options.showLogs) {
+                    console.log("Created root directory:", normalizePath(this._options.workDirectory, this._options.documentName));
+                }
             }
 
             for await (const key of Object.keys(zipContent.files)) {
-                if (this._options.debug) {
-                    console.log("Queue:", normalizePath(this._options.workDirectory, this._options.documentName, key));
-                }
+                const t = Date.now();
+
                 if (zipContent.files[key].dir) {
                     if (!fs.existsSync(normalizePath(this._options.workDirectory, this._options.documentName, key))) {
-                        if (this._options.debug) {
-                            console.log("Created folder:", normalizePath(this._options.workDirectory, this._options.documentName, key));
-                        }
                         fs.mkdirSync(normalizePath(this._options.workDirectory, this._options.documentName, key));
-                    } else {
-                        if (this._options.debug) {
-                            console.log("Folder exist:", normalizePath(this._options.workDirectory, this._options.documentName, key));
+
+                        if (this._options.showLogs) {
+                            filesTimeLogs.push({ time: Date.now() - t + "ms", file: key });
                         }
                     }
 
@@ -59,9 +61,10 @@ class DocumentEditor {
                         .nodeStream()
                         .pipe(fs.createWriteStream(normalizePath(this._options.workDirectory, this._options.documentName, key)))
                         .on("finish", () => {
-                            if (this._options.debug) {
-                                console.log("Created:", normalizePath(this._options.workDirectory, this._options.documentName, key));
+                            if (this._options.showLogs) {
+                                filesTimeLogs.push({ time: Date.now() - t + "ms", file: key });
                             }
+
                             resolve(true);
                         });
                 });
@@ -72,6 +75,11 @@ class DocumentEditor {
             console.error(exception);
 
             return null;
+        } finally {
+            if (this._options.showLogs) {
+                console.table(filesTimeLogs);
+                console.log("Exctracting time:", Date.now() - functionTime + "ms");
+            }
         }
     }
 
@@ -80,18 +88,34 @@ class DocumentEditor {
      * @returns {DocumentEditor | null}
      */
     parse(options = { target: "word/document.xml", onParsed: () => {} }) {
+        if (this._options.showLogs) {
+            console.time(options.target);
+        }
+
         try {
             const docFile = fs.readFileSync(normalizePath(this._options.workDirectory, this._options.documentName, options.target), "utf-8");
             const docContent = xmlParser.parse(docFile, parserConfig.read);
 
+            if (this._options.showLogs) {
+                console.timeLog(options.target, "Parsed");
+            }
+
             options.onParsed(docContent);
 
             const updatedFile = new Parser(parserConfig.write).parse(docContent);
+            if (this._options.showLogs) {
+                console.timeLog(options.target, "Changed");
+            }
+
             fs.writeFileSync(normalizePath(this._options.workDirectory, this._options.documentName, options.target), updatedFile);
             return this;
         } catch (exception) {
             console.log(exception);
             return null;
+        } finally {
+            if (this._options.showLogs) {
+                console.timeEnd(options.target);
+            }
         }
     }
 
@@ -99,10 +123,18 @@ class DocumentEditor {
      * @returns {Promise<Buffer | null>}
      */
     async archive() {
+        if (this._options.showLogs) {
+            console.time("Buffer");
+        }
+
         try {
             const newZip = new JSZip();
             const updatedZip = newZip.folder(this._options.documentName);
             const directoryObject = convertDirectoryToObject(normalizePath(this._options.workDirectory, this._options.documentName));
+
+            if (this._options.showLogs) {
+                console.timeLog("Buffer", "Converted directory to object");
+            }
 
             for (const key in directoryObject) {
                 updatedZip.file(key, directoryObject[key]);
@@ -113,6 +145,10 @@ class DocumentEditor {
             console.log(exception);
 
             return null;
+        } finally {
+            if (this._options.showLogs) {
+                console.timeEnd("Buffer");
+            }
         }
     }
 }
