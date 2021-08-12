@@ -1,7 +1,11 @@
 # Docx Raw Editor
 
 ```javascript
-async function main() {
+const path = require("path");
+const fs = require("fs");
+const DocumentEditor = require("docx_editor");
+
+(async () => {
     const data = fs.readFileSync(path.join(process.cwd(), "document.docx"));
     const docEditor = await new DocumentEditor().extract(data);
     const updatedDocument = await docEditor
@@ -11,5 +15,5 @@ async function main() {
         .archive();
 
     fs.writeFileSync(path.join(process.cwd(), "document-edited.docx"), updatedDocument);
-}
+})()
 ```
