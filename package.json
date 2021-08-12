@@ -1,6 +1,6 @@
 {
   "name": "docx_editor",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "main": "index.js",
   "keywords": [
     "docx",
