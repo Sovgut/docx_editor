@@ -10,8 +10,8 @@ const PARSER_CONFIG = {
         format: false,
         indentBy: "  ",
         supressEmptyNode: false,
-        tagValueProcessor: (a) => he.encode(a, { useNamedReferences: true }),
-        attrValueProcessor: (a) => he.encode(a, { isAttributeValue: true, useNamedReferences: true }),
+        tagValueProcessor: (a) => he.encode(String(a), { useNamedReferences: true }),
+        attrValueProcessor: (a) => he.encode(String(a), { isAttributeValue: true, useNamedReferences: true }),
     },
     read: {
         attributeNamePrefix: "@_",
