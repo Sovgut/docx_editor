@@ -1,0 +1,28 @@
+{
+  "name": "docx_raw_editor",
+  "version": "0.1.0",
+  "description": "Easy edit docx files in raw objects",
+  "main": "index.js",
+  "keywords": [
+    "docx",
+    "word",
+    "js",
+    "editor",
+    "raw"
+  ],
+  "author": {
+    "email": "sergey.sovgut@outlook.com",
+    "name": "Sergey Sovgut",
+    "url": "https://github.com/Sovgut"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "fast-xml-parser": "^3.19.0",
+    "he": "^1.2.0",
+    "jszip": "^3.7.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "prettier": "^2.3.2"
+  }
+}
