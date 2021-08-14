@@ -1,4 +1,7 @@
 # Changelog
+## [0.4.1] 2021-08-14
+
+- Fixed bug with `Maximum call stack size exceeded` when readonly properties used
 
 ## [0.4.0] 2021-08-14
 

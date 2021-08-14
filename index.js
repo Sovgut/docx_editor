@@ -12,14 +12,14 @@ class DocumentEditor {
      * @type {string}
      */
     get documentName() {
-        return this.documentName;
+        return this._options.documentName;
     }
 
     /**
      * @type {boolean}
      */
     get showLogs() {
-        return this.showLogs;
+        return this._options.showLogs;
     }
 
     /**
@@ -27,7 +27,7 @@ class DocumentEditor {
      * @type {string}
      */
     get workDirectory() {
-        return this.workDirectory;
+        return this._options.workDirectory;
     }
 
     /**
