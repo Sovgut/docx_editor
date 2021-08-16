@@ -1,10 +1,14 @@
 const os = require("os");
 const fs = require("fs");
 const JSZip = require("jszip");
-const { normalizePath, convertDirectoryToObject } = require("./tools/converter");
+const {
+    normalizePath,
+    convertDirectoryToObject,
+} = require("./tools/converter");
 const parserConfig = require("./config/initial.config");
 const xmlParser = require("fast-xml-parser");
 const Parser = require("fast-xml-parser").j2xParser;
+const { nanoid } = require("nanoid");
 
 class DocumentEditor {
     /**
@@ -40,7 +44,7 @@ class DocumentEditor {
         this._options = {
             showLogs: false,
             workDirectory: os.tmpdir(),
-            documentName: `document_${Date.now()}`,
+            documentName: `document_${nanoid(8)}_${Date.now()}`,
             ...options,
         };
     }
@@ -58,11 +62,20 @@ class DocumentEditor {
 
         const zipContent = await JSZip.loadAsync(data, { createFolders: true });
         try {
-            if (!fs.existsSync(normalizePath(this.workDirectory, this.documentName))) {
-                fs.mkdirSync(normalizePath(this.workDirectory, this.documentName));
+            if (
+                !fs.existsSync(
+                    normalizePath(this.workDirectory, this.documentName),
+                )
+            ) {
+                fs.mkdirSync(
+                    normalizePath(this.workDirectory, this.documentName),
+                );
 
                 if (this.showLogs) {
-                    console.log("Created root directory:", normalizePath(this.workDirectory, this.documentName));
+                    console.log(
+                        "Created root directory:",
+                        normalizePath(this.workDirectory, this.documentName),
+                    );
                 }
             }
 
@@ -70,11 +83,28 @@ class DocumentEditor {
                 const t = Date.now();
 
                 if (zipContent.files[key].dir) {
-                    if (!fs.existsSync(normalizePath(this.workDirectory, this.documentName, key))) {
-                        fs.mkdirSync(normalizePath(this.workDirectory, this.documentName, key));
+                    if (
+                        !fs.existsSync(
+                            normalizePath(
+                                this.workDirectory,
+                                this.documentName,
+                                key,
+                            ),
+                        )
+                    ) {
+                        fs.mkdirSync(
+                            normalizePath(
+                                this.workDirectory,
+                                this.documentName,
+                                key,
+                            ),
+                        );
 
                         if (this.showLogs) {
-                            filesTimeLogs.push({ time: Date.now() - t + "ms", file: key });
+                            filesTimeLogs.push({
+                                time: Date.now() - t + "ms",
+                                file: key,
+                            });
                         }
                     }
 
@@ -85,10 +115,21 @@ class DocumentEditor {
                     zipContent
                         .file(key)
                         .nodeStream()
-                        .pipe(fs.createWriteStream(normalizePath(this.workDirectory, this.documentName, key)))
+                        .pipe(
+                            fs.createWriteStream(
+                                normalizePath(
+                                    this.workDirectory,
+                                    this.documentName,
+                                    key,
+                                ),
+                            ),
+                        )
                         .on("finish", () => {
                             if (this.showLogs) {
-                                filesTimeLogs.push({ time: Date.now() - t + "ms", file: key });
+                                filesTimeLogs.push({
+                                    time: Date.now() - t + "ms",
+                                    file: key,
+                                });
                             }
 
                             resolve(true);
@@ -104,7 +145,10 @@ class DocumentEditor {
         } finally {
             if (this.showLogs) {
                 console.table(filesTimeLogs);
-                console.log("Exctracting time:", Date.now() - functionTime + "ms");
+                console.log(
+                    "Exctracting time:",
+                    Date.now() - functionTime + "ms",
+                );
             }
         }
     }
@@ -122,7 +166,10 @@ class DocumentEditor {
         }
 
         try {
-            const docFile = fs.readFileSync(normalizePath(this.workDirectory, this.documentName, target), "utf-8");
+            const docFile = fs.readFileSync(
+                normalizePath(this.workDirectory, this.documentName, target),
+                "utf-8",
+            );
             const docContent = xmlParser.parse(docFile, parserConfig.read);
 
             if (this.showLogs) {
@@ -131,12 +178,17 @@ class DocumentEditor {
 
             onParsed(docContent);
 
-            const updatedFile = new Parser(parserConfig.write).parse(docContent);
+            const updatedFile = new Parser(parserConfig.write).parse(
+                docContent,
+            );
             if (this.showLogs) {
                 console.timeLog(target, "Changed");
             }
 
-            fs.writeFileSync(normalizePath(this.workDirectory, this.documentName, target), updatedFile);
+            fs.writeFileSync(
+                normalizePath(this.workDirectory, this.documentName, target),
+                updatedFile,
+            );
             return this;
         } catch (exception) {
             console.log(exception);
@@ -162,7 +214,9 @@ class DocumentEditor {
         try {
             const newZip = new JSZip();
             const updatedZip = newZip.folder(this.documentName);
-            const directoryObject = convertDirectoryToObject(normalizePath(this.workDirectory, this.documentName));
+            const directoryObject = convertDirectoryToObject(
+                normalizePath(this.workDirectory, this.documentName),
+            );
 
             if (this.showLogs) {
                 console.timeLog("Buffer", "Converted directory to object");
@@ -193,8 +247,22 @@ class DocumentEditor {
      */
     mkdir(relativePath) {
         try {
-            if (!fs.existsSync(normalizePath(this.workDirectory, this.documentName, relativePath))) {
-                fs.mkdirSync(normalizePath(this.workDirectory, this.documentName, relativePath));
+            if (
+                !fs.existsSync(
+                    normalizePath(
+                        this.workDirectory,
+                        this.documentName,
+                        relativePath,
+                    ),
+                )
+            ) {
+                fs.mkdirSync(
+                    normalizePath(
+                        this.workDirectory,
+                        this.documentName,
+                        relativePath,
+                    ),
+                );
             }
 
             return this;
@@ -215,7 +283,14 @@ class DocumentEditor {
      */
     writeFile(relativePath, data) {
         try {
-            fs.writeFileSync(normalizePath(this.workDirectory, this.documentName, relativePath), data);
+            fs.writeFileSync(
+                normalizePath(
+                    this.workDirectory,
+                    this.documentName,
+                    relativePath,
+                ),
+                data,
+            );
 
             return this;
         } catch (exception) {

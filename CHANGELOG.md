@@ -1,4 +1,10 @@
 # Changelog
+
+## [0.5.0] 2021-08-16
+
+- Added [nanoid](https://www.npmjs.com/package/nanoid) package for generating unique document name
+- Updated all packages
+
 ## [0.4.1] 2021-08-14
 
 - Fixed bug with `Maximum call stack size exceeded` when readonly properties used

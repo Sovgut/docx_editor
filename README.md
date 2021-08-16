@@ -42,7 +42,7 @@ You can pass options to constructor for changing working directory, default docu
     // Default: os.tmpdir()
     workDirectory: string
     
-    // Default: `document_${Date.now()}`
+    // Default: `document_${nanoid(8)}_${Date.now()}`
     documentName: string
 }
 ```
